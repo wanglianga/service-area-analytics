@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  service-area-analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: service-area-dashboard
+    image: service-area-analytics:latest
+    restart: unless-stopped
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    environment:
+      - TZ=Asia/Shanghai
+      - PYTHONUNBUFFERED=1
+    command:
+      - bash
+      - -c
+      - |
+        echo "正在生成数据并执行全流程分析..."
+        python run_pipeline.py --start 2026-05-01 --end 2026-06-15
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8050/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s

@@ -1,0 +1,38 @@
+service_area:
+  name: "京沪高速苏州服务区"
+  capacity:
+    parking_small: 200
+    parking_large: 80
+    ev_chargers: 20
+    gas_pumps: 8
+    restaurant_seats: 150
+    restroom_stalls: 40
+  hours:
+    open: "00:00"
+    close: "23:59"
+
+data_paths:
+  input_dir: "data/input"
+  output_dir: "data/output"
+  raw_dir: "data/raw"
+
+analysis:
+  peak_hours:
+    morning: ["07:00", "10:00"]
+    noon: ["11:30", "13:30"]
+    evening: ["16:00", "19:00"]
+  congestion_threshold: 0.85
+  warning_threshold: 0.75
+  vehicle_coef:
+    small_to_people: 1.5
+    large_to_people: 3.0
+
+visualization:
+  theme: "plotly_white"
+  colors:
+    primary: "#1976D2"
+    danger: "#E53935"
+    warning: "#FB8C00"
+    success: "#43A047"
+    neutral: "#757575"
+  port: 8050
