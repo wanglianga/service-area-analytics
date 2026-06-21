@@ -102,21 +102,18 @@ class DataCleaner:
         df["duration_min"] = (df["exit_time"] - df["entry_time"]).dt.total_seconds() / 60
         df = df[df["duration_min"] > 0]
 
-        df = df.sort_values(["parking_id", "entry_time"])
-        overlap_count = 0
-        for pid in df["parking_id"].unique():
-            sub = df[df["parking_id"] == pid].copy()
-            if len(sub) <= 1:
-                continue
-            for i in range(1, len(sub)):
-                prev_exit = sub.iloc[i - 1]["exit_time"]
-                curr_entry = sub.iloc[i]["entry_time"]
-                if curr_entry < prev_exit:
-                    overlap_count += 1
-                    df.loc[sub.index[i], "entry_time"] = prev_exit
-                    df.loc[sub.index[i], "duration_min"] = (
-                        df.loc[sub.index[i], "exit_time"] - df.loc[sub.index[i], "entry_time"]
-                    ).total_seconds() / 60
+        df = df.sort_values(["parking_id", "entry_time"]).copy()
+        prev_exit = (
+            df.groupby("parking_id")["exit_time"]
+            .cummax()
+            .groupby(df["parking_id"])
+            .shift()
+        )
+        overlap_mask = prev_exit.notna() & (df["entry_time"] < prev_exit)
+        overlap_count = int(overlap_mask.sum())
+        df.loc[overlap_mask, "entry_time"] = prev_exit.loc[overlap_mask]
+        df["duration_min"] = (df["exit_time"] - df["entry_time"]).dt.total_seconds() / 60
+        df = df[df["duration_min"] > 0]
 
         after = len(df)
         self._log_cleaning("跨日停留+时间重叠校正", "停车场数据", before, after,

@@ -67,9 +67,9 @@ class ServiceAreaVisualizer:
             vertical_spacing=0.08,
             horizontal_spacing=0.06,
             specs=[
-                [{"secondary_y": True}, {"type": "heatmap"}],
-                [{"type": "scatter"}, {"type": "bar"}],
-                [{"type": "pie"}, {"type": "bar"}]
+                [{"type": "xy", "secondary_y": True}, {"type": "heatmap"}],
+                [{"type": "xy"}, {"type": "xy"}],
+                [{"type": "pie"}, {"type": "xy", "secondary_y": True}]
             ]
         )
         fig.update_annotations(font_size=12, font_color=COLORS["primary"])
@@ -157,9 +157,8 @@ class ServiceAreaVisualizer:
             )
             fig.add_trace(
                 go.Scatter(x=ch["hour_of_day"], y=ch["wait"], name="平均等待(分)",
-                          line=dict(color=COLORS["warning"], width=2), mode="lines+markers",
-                          yaxis="y2"),
-                row=3, col=2
+                          line=dict(color=COLORS["warning"], width=2), mode="lines+markers"),
+                row=3, col=2, secondary_y=True
             )
 
         fig.update_layout(
@@ -208,7 +207,7 @@ class ServiceAreaVisualizer:
             y=pivot.index.tolist(),
             colorscale="RdYlGn_r",
             showscale=True,
-            colorbar=dict(title=metric_cn, titleside="right"),
+            colorbar=dict(title=metric_cn),
             hovertemplate=(
                 "日期: %{y}<br>时段: %{x}时<br>" + metric_cn + ": %{z:.1f}<extra></extra>"
             ),
@@ -238,8 +237,8 @@ class ServiceAreaVisualizer:
             rows=2, cols=2,
             subplot_titles=("餐饮品类营收贡献", "餐饮品类销量TOP10",
                            "便利店品类销售占比", "便利店SKU销售TOP10"),
-            specs=[[{"type": "bar"}, {"type": "bar"}],
-                   [{"type": "pie"}, {"type": "bar"}]],
+            specs=[[{"type": "xy", "secondary_y": True}, {"type": "xy"}],
+                   [{"type": "pie"}, {"type": "xy"}]],
             vertical_spacing=0.12
         )
 
@@ -266,8 +265,8 @@ class ServiceAreaVisualizer:
                           text=[f"{v}%" for v in (cat_rev["revenue"]/cat_rev["revenue"].sum()*100).round(1)],
                           textposition="top center",
                           line=dict(color=COLORS["warning"], width=2),
-                          name="占比%", yaxis="y2"),
-                row=1, col=1
+                          name="占比%"),
+                row=1, col=1, secondary_y=True
             )
 
             item_top = rdf.groupby("item_name").agg(
@@ -327,7 +326,7 @@ class ServiceAreaVisualizer:
             subplot_titles=("投诉类型分布", "投诉严重程度占比",
                            "每日投诉趋势与风险评分", "TOP投诉问题类别"),
             specs=[[{"type": "pie"}, {"type": "pie"}],
-                   [{"secondary_y": True}, {"type": "bar"}]]
+                   [{"type": "xy", "secondary_y": True}, {"type": "xy"}]]
         )
 
         if complaints_df is not None and not complaints_df.empty:
@@ -416,9 +415,8 @@ class ServiceAreaVisualizer:
             )
             fig.add_trace(
                 go.Scatter(x=daily["date"], y=daily["rev"], name="营收(元)",
-                          mode="lines+markers", line=dict(color=COLORS["warning"]),
-                          yaxis="y2"),
-                row=1, col=1
+                          mode="lines+markers", line=dict(color=COLORS["warning"])),
+                row=1, col=1, secondary_y=True
             )
 
             cdf["hour"] = pd.to_datetime(cdf["start_time"]).dt.hour
@@ -483,7 +481,7 @@ class ServiceAreaVisualizer:
             y=pivot.index.tolist(),
             colorscale="OrRd",
             showscale=True,
-            colorbar=dict(title="建议备货量", titleside="right"),
+            colorbar=dict(title="建议备货量"),
             text=[[f"{int(v)}份" for v in row] for row in pivot.values],
             texttemplate="%{text}",
             hovertemplate="品类:%{y}<br>时段:%{x}<br>建议备货:%{z}份<extra></extra>"
@@ -520,7 +518,7 @@ class ServiceAreaVisualizer:
         fig = make_subplots(
             rows=1, cols=2,
             subplot_titles=("不同天气下客流与营收对比", "温度与转化率散点图"),
-            specs=[[{"type": "bar"}, {"type": "scatter"}]]
+            specs=[[{"type": "xy", "secondary_y": True}, {"type": "xy"}]]
         )
 
         fig.add_trace(
@@ -530,9 +528,8 @@ class ServiceAreaVisualizer:
         )
         fig.add_trace(
             go.Scatter(x=agg["weather"], y=agg["avg_revenue"], name="平均营收(元)",
-                      mode="markers", marker_size=15, marker_color=COLORS["warning"],
-                      yaxis="y2"),
-            row=1, col=1
+                      mode="markers", marker_size=15, marker_color=COLORS["warning"]),
+            row=1, col=1, secondary_y=True
         )
 
         scatter = df.sample(min(500, len(df)), random_state=42) if len(df) > 500 else df
@@ -546,7 +543,7 @@ class ServiceAreaVisualizer:
                     colorscale="Viridis",
                     size=8,
                     showscale=True,
-                    colorbar=dict(title="客流规模", titleside="right")
+                    colorbar=dict(title="客流规模")
                 ),
                 text=[f"{w}<br>{t}°C" for w, t in zip(scatter["weather"], scatter["temperature_c"])],
                 hovertemplate="气温:%{x}°C<br>转化率:%{y}%<br>%{text}<extra></extra>",
